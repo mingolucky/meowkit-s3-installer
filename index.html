@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Official MeowKit browser-based firmware installer.">
   <title>MeowKit Firmware Installer</title>
-  <script type="module" src="./installer.js"></script>
+  <script type="module" src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js?module"></script>
   <style>
     :root { color-scheme: light; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; --text:#111; --muted:#6a6a6a; --line:#e7e7e7; --surface:#f7f7f7; --button:#111; --warning-bg:#fff4f2; --warning-text:#b42318; }
     * { box-sizing:border-box; }
@@ -26,22 +26,9 @@
     .install-action { margin-top:18px; }
     .install-button { min-width:220px; padding:15px 28px; border:0; border-radius:12px; background:var(--button); color:#fff; font:inherit; font-size:16px; font-weight:700; cursor:pointer; }
     .install-button:hover { background:#333; }
-    button:disabled { opacity:.45; cursor:default; }
-    button:focus-visible,summary:focus-visible { outline:3px solid #2476d3; outline-offset:4px; }
-    [hidden] { display:none !important; }
-    .actions { display:flex; flex-wrap:wrap; gap:12px; margin-top:20px; }
-    .secondary { background:#fff; color:#111; border:1px solid #ccc; }
-    .secondary:hover { background:#eee; }
-    .status { margin:20px 0 0; font-size:16px; line-height:1.6; overflow-wrap:anywhere; }
-    .status[data-state="error"],.status[data-state="load-error"] { color:var(--warning-text); }
-    progress { display:block; width:100%; height:12px; margin-top:16px; accent-color:#111; }
-    .erase-option { display:flex; align-items:start; gap:10px; margin-top:20px; color:#444; font-size:14px; line-height:1.5; }
-    .erase-option input { margin-top:4px; }
-    details { margin-top:20px; }
-    summary { cursor:pointer; font-weight:650; line-height:1.5; }
-    pre { max-height:240px; overflow:auto; white-space:pre-wrap; overflow-wrap:anywhere; font-size:12px; line-height:1.6; }
     .warning { display:block; margin-top:14px; padding:13px 15px; border-radius:10px; background:var(--warning-bg); color:var(--warning-text); font-size:14px; line-height:1.5; }
     .notice { margin-top:18px; padding:16px 18px; border:1px solid var(--line); border-radius:14px; background:#fff; color:var(--muted); font-size:14px; line-height:1.6; }
+    esp-web-install-button { --esp-tools-button-color:#111; --esp-tools-button-text-color:#fff; --esp-tools-button-border-radius:12px; }
     @media (max-width:600px) { body { padding:40px 16px; } .hero { margin-bottom:30px; } .phase { padding:22px 16px; border-radius:18px; } .step { grid-template-columns:34px minmax(0,1fr); gap:12px; padding:18px 16px; } .step-number { width:34px; height:34px; } .step-content { padding-top:3px; font-size:15px; } .install-button { width:100%; min-width:0; } }
   </style>
 </head>
@@ -49,46 +36,29 @@
   <main class="installer">
     <header class="hero">
       <h1>Update your MeowKit</h1>
-      <p class="version" id="version">Latest stable version: v1.0.4</p>
-      <p class="description">Connect MeowKit and install the latest official firmware from your browser.</p>
+      <p class="version">Latest stable version: v1.0.4</p>
+      <p class="description">Enter download mode, then install the latest official firmware from your browser.</p>
     </header>
     <section class="phase" aria-labelledby="ready-heading">
       <h2 id="ready-heading">Get MeowKit ready</h2>
-      <p class="phase-description">For routine updates from v1.0.4 or later, the installer restarts MeowKit into download mode. No BOOT button needed.</p>
+      <p class="phase-description">The screen stays off in download mode. That is expected.</p>
       <ol class="steps">
-        <li class="step"><span class="step-number" aria-hidden="true">1</span><div class="step-content"><p><strong>Turn on MeowKit</strong> and connect it to your computer with a USB data cable. Close PC Monitor and other serial applications.</p></div></li>
-        <li class="step"><span class="step-number" aria-hidden="true">2</span><div class="step-content"><p>Select <strong>Connect MeowKit</strong>, then choose MeowKit's USB port. Keep the cable connected while MeowKit restarts. Its screen will turn off.</p></div></li>
-        <li class="step"><span class="step-number" aria-hidden="true">3</span><div class="step-content"><p>If asked, select <strong>Select download port</strong> and choose <span class="ui-label">USB JTAG/serial debug unit</span>. Then select <strong>Install</strong>.</p></div></li>
+        <li class="step"><span class="step-number" aria-hidden="true">1</span><div class="step-content"><p><strong>Power off MeowKit</strong> and disconnect the USB cable.</p></div></li>
+        <li class="step"><span class="step-number" aria-hidden="true">2</span><div class="step-content"><p>Use a Dupont jumper wire to hold the rear <strong>BOOT</strong> button. Keep holding BOOT, press and hold the power button for 1–2 seconds, then release the power button. Release and remove the jumper wire.</p></div></li>
+        <li class="step"><span class="step-number" aria-hidden="true">3</span><div class="step-content"><p>Connect MeowKit to your computer with a <strong>USB data cable</strong>.</p></div></li>
       </ol>
     </section>
     <section class="phase" aria-labelledby="install-heading">
       <h2 id="install-heading">Install firmware</h2>
       <p class="phase-description">Keep MeowKit connected until installation finishes.</p>
-      <div class="actions">
-        <button id="connect" class="install-button" disabled>Connect MeowKit</button>
-        <button id="download-port" class="install-button" hidden>Select download port</button>
-        <button id="install" class="install-button" hidden>Install</button>
-        <button id="cancel" class="install-button secondary" hidden>Cancel</button>
+      <div class="install-action">
+        <esp-web-install-button manifest="./stable/manifest.json">
+          <button slot="activate" class="install-button">Connect and install</button>
+          <span slot="unsupported" class="warning">Use Google Chrome or Microsoft Edge on a desktop computer.</span>
+          <span slot="not-allowed" class="warning">Firmware installation requires HTTPS.</span>
+        </esp-web-install-button>
       </div>
-      <p id="status" class="status" role="status" aria-live="polite">Loading installer…</p>
-      <progress id="progress" max="100" aria-label="Firmware installation progress" hidden></progress>
-      <label class="erase-option"><input id="erase" type="checkbox"> Erase all flash before installing. This removes saved settings and data in internal flash.</label>
-      <div class="notice">Use Chrome or Edge on a desktop computer. The browser may ask for separate permission for the download port after MeowKit restarts. Back up your settings first: installing a complete firmware image may reset them, even without a full erase.</div>
-      <details><summary>Installation log</summary><pre id="log" aria-label="Installation log"></pre></details>
-      <noscript><p class="warning">Enable JavaScript to use the firmware installer.</p></noscript>
-    </section>
-    <section class="phase" aria-labelledby="recovery-heading">
-      <h2 id="recovery-heading">Need BOOT recovery?</h2>
-      <p class="phase-description">Use this for a first installation, older firmware, or a device that cannot start normally.</p>
-      <details>
-        <summary>Show recovery steps</summary>
-        <ol class="steps">
-          <li class="step"><span class="step-number" aria-hidden="true">1</span><div class="step-content"><p>Power off MeowKit and disconnect the USB cable.</p></div></li>
-          <li class="step"><span class="step-number" aria-hidden="true">2</span><div class="step-content"><p>Hold the rear <strong>BOOT</strong> button with a Dupont jumper wire. Keep holding BOOT, press and hold the power button for 1–2 seconds, then release the power button. Release BOOT and remove the jumper wire.</p></div></li>
-          <li class="step"><span class="step-number" aria-hidden="true">3</span><div class="step-content"><p>Connect a USB data cable. The screen stays off in download mode. Select <strong>Connect download port</strong>, choose <span class="ui-label">USB JTAG/serial debug unit</span>, then select <strong>Install</strong>.</p></div></li>
-        </ol>
-        <div class="actions"><button id="recovery-connect" class="install-button secondary" disabled>Connect download port</button></div>
-      </details>
+      <div class="notice">Select <span class="ui-label">USB JTAG/serial debug unit (COMxx)</span> when asked, then follow the on-screen instructions. <strong>Erase device</strong> removes saved settings and stored data.</div>
     </section>
   </main>
 </body>
